@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String    @id @default(uuid()) @db.Uuid
+  key         String    @db.Uuid
+  first_name  String
+  last_name   String
+  email       String    @unique
+  login       String    @unique
+  phone       String    @unique
+  password    String    @default(uuid())
+  avatar_url  String?
+  description String    @default("")
+  is_active   Boolean   @default(false)
+  created_at  DateTime  @default(now())
+  updated_at  DateTime? @updatedAt
+  deleted_at  DateTime?
+
+  session    Session @relation(fields: [session_id], references: [id])
+  session_id String  @unique @db.Uuid
+
+  @@map("users")
+}
+
+model Session {
+  id         String    @id @default(uuid()) @db.Uuid
+  created_at DateTime  @default(now())
+  updated_at DateTime? @updatedAt
+
+  expires_at DateTime  @default(now())
+  revoked_at DateTime?
+  token      String?   @unique
+
+  user         User?
+  session_logs SessionLogs[]
+
+  @@map("sessions")
+}
+
+model SessionLogs {
+  id          String   @id @default(uuid()) @db.Uuid
+  created_at  DateTime @default(now())
+  description String
+
+  session    Session @relation(fields: [session_id], references: [id])
+  session_id String  @db.Uuid
+
+  @@map("session-logs")
+}
